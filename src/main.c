@@ -3,55 +3,62 @@
 #include <sys/types.h>
 
 void main() {
+    // Start up Winsock API
     WSADATA wsaData;
-    int iResult;
-
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
+    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+        printf("Failed to start up Winsock API.");
         return;
     }
 
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) { 
-        printf("socket creation failed...\n"); 
+    SOCKET server_socket;
+    SOCKET client_socket;
+
+    // Create socket
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0) { 
+        printf("socket creation failed...\n");
+        WSACleanup();
         exit(0); 
     } 
+
+    // Bind socket to IP address and port
     struct sockaddr_in server_address;
-
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_address.sin_port = htons(3149);
+    server_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); // localhost (127.0.0.1)
+    server_address.sin_port = htons(5000);
 
-    int bind_res = bind(sockfd, (struct sockaddr*)&server_address, sizeof(server_address));
-    
-    if(bind_res != 0) {
+    if(bind(server_socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         printf("\nSocket binding failed");
+        WSACleanup();
         return;
     }
 
-    printf("\nMIGHT'VE binded socket to ADDRESS localhost:8080");
+    printf("Bound socket to: http://localhost:5000", server_address.sin_port);
 
-    int lisn_res = listen(sockfd, 1);
-
-    if(lisn_res != 0) {
-        printf("\nSocket listening failed");
+    // Listen for incoming connections
+    if(listen(server_socket, 1) < 0) {
+        printf("\nsocket listening failed...");
+        WSACleanup();
         return;
     }
 
     printf("\nListening for client...");
 
+    // Accept client connection
     struct sockaddr client_addr;
     int len = sizeof(client_addr);
 
-    SOCKET new_socket = accept(sockfd, &client_addr, &len);
-
-    // HUH?
-    if(new_socket < 0) {
+    client_socket = accept(server_socket, &client_addr, &len);
+    if(client_socket < 0) {
         printf("\nfailed to accept socket");
+        WSACleanup();
         return;
     }
 
     printf("\nAccepted client...");
-    closesocket(sockfd);
+
+    // close server socket
+    closesocket(server_socket);
+    closesocket(client_socket);
+    WSACleanup();
 }
