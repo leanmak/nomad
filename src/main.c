@@ -37,7 +37,7 @@ void main() {
     printf("Bound socket to: http://localhost:5000", server_address.sin_port);
 
     // Listen for incoming connections
-    if(listen(server_socket, 1) < 0) {
+    if(listen(server_socket, 5) < 0) {
         printf("\nsocket listening failed...");
         closesocket(server_socket);
         WSACleanup();
@@ -58,6 +58,8 @@ void main() {
         return;
     }
 
+    closesocket(server_socket);
+
     printf("\n\nAccepted client...");
 
     // Recieve and read bytes
@@ -67,14 +69,18 @@ void main() {
     if(res > 0) {
         printf("\nRecieved bytes: %d", res);
         printf("\n%s\n", buffer);
+
+        // send back 200 OK
+        char *response = "HTTP/1.1 200 OK\r\n\r\n";
+        int bytes_sent = send(client_socket, response, res, 0);
+        if(bytes_sent < 0) {
+            printf("\nfailed to send response...");
+        } else {
+            printf("\n\nSent %d bytes\n\n", bytes_sent);
+        }
     } else {
         printf("\nfailed to recieve bytes...");
     }
 
     printf("\nending execution...\n");
-
-    // close sockets
-    closesocket(server_socket);
-    closesocket(client_socket);
-    WSACleanup();
 }
