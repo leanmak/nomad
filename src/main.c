@@ -1,6 +1,7 @@
 #include <stdio.h>
 # include <winsock2.h>
 #include <sys/types.h>
+#include <string.h>
 
 void main() {
     // Start up Winsock API
@@ -44,8 +45,6 @@ void main() {
         return;
     }
 
-    printf("\n\nListening for client...");
-
     // Accept client connection
     struct sockaddr client_addr;
     int len = sizeof(client_addr);
@@ -60,27 +59,30 @@ void main() {
 
     closesocket(server_socket);
 
-    printf("\n\nAccepted client...");
-
     // Recieve and read bytes
     char buffer[1024];
     int res = recv(client_socket, buffer, 1024, 0);
 
     if(res > 0) {
-        printf("\nRecieved bytes: %d", res);
-        printf("\n%s\n", buffer);
+        char *sep = strtok(buffer, "\r\n"); // gives us the request line (first line)
 
-        // send back 200 OK
-        char *response = "HTTP/1.1 200 OK\r\n\r\n";
-        int bytes_sent = send(client_socket, response, res, 0);
-        if(bytes_sent < 0) {
-            printf("\nfailed to send response...");
-        } else {
-            printf("\n\nSent %d bytes\n\n", bytes_sent);
+        char *url_path = strtok(sep, " ");
+        int i = 0;
+        while(url_path != NULL && i < 1) {
+            i++;
+            url_path = strtok(NULL, " ");
         }
+
+        // send back 200 OK if home page, otherwise send not found
+        char *response;
+        if(strcmp(url_path, "/") == 0) {
+            response = "HTTP/1.1 200 OK\r\n\r\n";
+        } else {
+            response = "HTTP/1.1 404 Not Found\r\n\r\n";
+        }
+
+        send(client_socket, response, res, 0);
     } else {
         printf("\nfailed to recieve bytes...");
     }
-
-    printf("\nending execution...\n");
 }
