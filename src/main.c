@@ -29,6 +29,7 @@ void main() {
 
     if(bind(server_socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0) {
         printf("\nSocket binding failed");
+        closesocket(server_socket);
         WSACleanup();
         return;
     }
@@ -38,11 +39,12 @@ void main() {
     // Listen for incoming connections
     if(listen(server_socket, 1) < 0) {
         printf("\nsocket listening failed...");
+        closesocket(server_socket);
         WSACleanup();
         return;
     }
 
-    printf("\nListening for client...");
+    printf("\n\nListening for client...");
 
     // Accept client connection
     struct sockaddr client_addr;
@@ -51,13 +53,27 @@ void main() {
     client_socket = accept(server_socket, &client_addr, &len);
     if(client_socket < 0) {
         printf("\nfailed to accept socket");
+        closesocket(server_socket);
         WSACleanup();
         return;
     }
 
-    printf("\nAccepted client...");
+    printf("\n\nAccepted client...");
 
-    // close server socket
+    // Recieve and read bytes
+    char buffer[1024];
+    int res = recv(client_socket, buffer, 1024, 0);
+
+    if(res > 0) {
+        printf("\nRecieved bytes: %d", res);
+        printf("\n%s\n", buffer);
+    } else {
+        printf("\nfailed to recieve bytes...");
+    }
+
+    printf("\nending execution...\n");
+
+    // close sockets
     closesocket(server_socket);
     closesocket(client_socket);
     WSACleanup();
