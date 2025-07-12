@@ -38,7 +38,7 @@ void main() {
     printf("Bound socket to: http://localhost:5000", server_address.sin_port);
 
     // Listen for incoming connections
-    if(listen(server_socket, 5) < 0) {
+    if(listen(server_socket, 1) < 0) {
         printf("\nsocket listening failed...");
         closesocket(server_socket);
         WSACleanup();
@@ -64,7 +64,9 @@ void main() {
     int res = recv(client_socket, buffer, 1024, 0);
 
     if(res > 0) {
-        char *sep = strtok(buffer, "\r\n"); // gives us the request line (first line)
+        char tmp_buffer[1024];
+        strncpy(tmp_buffer, buffer, 1024);
+        char *sep = strtok(tmp_buffer, "\r\n"); // gives us the request line (first line)
 
         char *url_path = strtok(sep, " ");
         int i = 0;
@@ -73,15 +75,51 @@ void main() {
             url_path = strtok(NULL, " ");
         }
 
+        url_path = strtok(url_path, "/");
+
         // send back 200 OK if home page, otherwise send not found
-        char *response;
-        if(strcmp(url_path, "/") == 0) {
+        char *response = (char*)malloc(1024 * sizeof(char));
+        if(url_path == NULL) {
             response = "HTTP/1.1 200 OK\r\n\r\n";
+        } else if(strcmp(url_path, "echo") == 0) { // /echo/{str}
+            url_path = strtok(NULL, "/"); // get {str}
+            if(url_path == NULL) {
+                url_path = "";
+            }
+
+            sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", strlen(url_path), url_path);
+        } else if(strcmp(url_path, "user-agent") == 0) { // /user-agent
+            tmp_buffer[0] = '\0';
+            strncpy(tmp_buffer, buffer, 1024);
+
+            char *headers = strtok(tmp_buffer, "\r\n");
+            while(headers != NULL) {
+                if(_strnicmp(headers, "user-agent", 10) == 0) {
+                    break;
+                }
+                headers = strtok(NULL, "\r\n");
+            }
+
+            // skip "User-Agent: "
+            char *start = headers + 12;
+
+            // reach the first character of CRLF
+            char *end = start;
+            while(*end != '\n' && *end != '\r' && *end != '\0') {
+                end++;
+            }
+
+            size_t user_agent_size = end - start;
+            char *user_agent = (char*)malloc((len+1) * sizeof(char)); // +1 for the null terminator
+            strncpy(user_agent, start, user_agent_size);
+            user_agent[user_agent_size] = '\0';
+
+            sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", strlen(user_agent), user_agent);
         } else {
             response = "HTTP/1.1 404 Not Found\r\n\r\n";
         }
 
-        send(client_socket, response, res, 0);
+        send(client_socket, response, strlen(response), 0);
     } else {
         printf("\nfailed to recieve bytes...");
     }
