@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 extern bool init_wsa;
+// This number has no significance, it just popped into my mind.
 extern const int MAX_CONNECTIONS;
 
 int startup_winsock_api();
