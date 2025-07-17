@@ -1,4 +1,5 @@
 roadmap.md
 sources.md
-*/main.exe
+*.exe
 .vscode
+*.o
