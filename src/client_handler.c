@@ -2,7 +2,6 @@
 #include "client_handler.h"
 #include "request_parser.h"
 #include <string.h>
-#include <math.h>
 
 // Reads the specified file's content into a string
 char* read_file_to_string(char *file_name) {
