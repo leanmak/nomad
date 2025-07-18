@@ -6,5 +6,6 @@
 #include <winsock2.h>
 
 int handle_connection(SOCKET client_socket);
+char* read_file_to_string(char *file_name);
 
 #endif

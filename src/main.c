@@ -8,7 +8,6 @@ int main() {
     int result;
 
     while((client_socket = accept_client_socket(server)) != (long long unsigned int)-1) {
-        printf("\nGot a client");
         result = handle_connection(client_socket);
 
         if(result == -1) {

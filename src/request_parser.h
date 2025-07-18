@@ -10,14 +10,15 @@ struct http_status {
 };
 
 struct http_header {
-    char *name;
-    char *value;
+    char name[256];
+    char value[256];
 };
 
 struct http_request {
     struct http_status status;
     struct http_header headers[100];
-    char *body;
+    int header_count;
+    char body[1024];
 };
 
 struct http_header parse_header(char *header_line);

@@ -4,101 +4,94 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct http_header parse_header(char *header_line) {
-    struct http_header header;
-
-    // find first colon and set it as the end of the string (splits it)
-    char *colon = strchr(header_line, ':');
-    *colon = '\0'; 
-
-    header.name = header_line;
-
-    // remove whitespace
-    colon++;
-    while(colon == (char*)' ') colon++;
-    header.value = colon+1;
-
-    return header;
-}
-
+// Parses the status line of an http request (e.g. GET /about HTTP/1.1)
 struct http_status parse_status(char *status_line) {
     struct http_status status;
-
     char *status_i = strtok(status_line, " ");
+
     int i = 0;
     while(status_i != NULL) {
-        if (i == 0) {
-            strncpy(status.method, status_i, sizeof(status.method) - 1);
-        } else if (i == 1) {
-            strncpy(status.route, status_i, sizeof(status.route) - 1);
+        int length = strlen(status_i);
+
+        if(i == 0) {
+            strncpy(status.method, status_i, length);
+            status.method[length] = '\0';
+        } else if(i == 1) {
+            strncpy(status.route, status_i, length);
+            status.route[length] = '\0';
         } else {
-            strncpy(status.http_version, status_i, sizeof(status.http_version) - 1);
+            strncpy(status.http_version, status_i, length);
+            status.http_version[length] = '\0';
         }
 
-        status_i = strtok(NULL, " ");
         i++;
+        status_i = strtok(NULL, " ");
     }
 
     return status;
 }
 
+// Parses the header line of an http request (e.g. HeaderName: HeaderValue)
+struct http_header parse_header(char *header_line) {
+    struct http_header header;
+
+    char *colon = strchr(header_line, ':');
+    *colon = '\0';
+    
+    int header_name_length = strlen(header_line);
+    strncpy(header.name, header_line, header_name_length);
+    header.name[header_name_length] = '\0';
+
+    // everything after colon is the header value (but there are some trailing whitespaces)
+    colon++;
+    while(*colon == ' ') colon++;
+    int header_value_length = strlen(colon);
+    strncpy(header.value, colon, header_value_length);
+    header.value[header_value_length] = '\0';
+
+    return header;
+}
+
+// Parses the entire http request (Status Line + Headers + Body)
 struct http_request parse_request(char *request_buffer) {
     struct http_request request;
-
-    //printf("\n%s", request_buffer);
-
-    /*
-        0 = reading status
-        1 = reading headers
-    */
-    int reading = 0;
-    int next_header_index = 0;
-    int body_length;
-
-    // have to use strtok_r to manage the tracking myself instead of passing it to internal static state :(
     char *save_ptr;
     char *request_i = strtok_r(request_buffer, "\n", &save_ptr);
 
+    int reading = 0;
+    int next_header_idx = 0;
+    int content_length = 0;
     while(request_i != NULL) {
-        // create copy temp string
-        int length = strlen(request_i);
-        char *tmp = (char*)malloc((length+1) * sizeof(char));
-        strncpy(tmp, request_i, length);
-        tmp[length] = '\0';
+        char *tmp = strdup(request_i);
 
-        // Status Line
         if(reading == 0) {
             request.status = parse_status(tmp);
             reading++;
-        } else { // Headers
-            // skip to body
-            if(length == 1) {
-                free(tmp);
+        } else if(reading == 1) {
+            // pass to body
+            if(strlen(request_i) == 1) {
                 request_i = strtok_r(NULL, "\n", &save_ptr);
-                break;
+                if(content_length > 0) reading++;
+                request.header_count = next_header_idx;
+                continue;
             }
+
             struct http_header h = parse_header(tmp);
+            if(_stricmp(h.name, "content-length") == 0) content_length = atoi(h.value);
+            request.headers[next_header_idx++] = h;
+        } else if(reading == 2) {
+            int length = strlen(tmp);
 
-            if(_stricmp(h.name, "Content-Length") == 0) {
-                body_length = atoi(h.value);
-            }
+            char *buffer = (char*)malloc(length+1);
+            sprintf(buffer, "%s\n", tmp);
 
-            request.headers[next_header_index++] = h;
+            strcat(request.body, buffer);
         }
 
-        free(tmp);
         request_i = strtok_r(NULL, "\n", &save_ptr);
     }
 
-    // TODO: remove spaces
-    // char *body = (char*)malloc((body_length+1)*sizeof(char));
-    // body[0] = '\0';
-    // while(request_i != NULL) {
-    //     int length = strlen(request_i);
-    //     strncat(body, request_i, length);
-    //     request_i = strtok_r(NULL, "\n", &save_ptr);
-    // }
-    // request.body = body;
+    request.body[content_length] = '\0';
 
     return request;
 }
