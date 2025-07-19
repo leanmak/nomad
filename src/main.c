@@ -8,12 +8,14 @@ int main() {
     int result;
 
     while((client_socket = accept_client_socket(server)) != (long long unsigned int)-1) {
+        printf("\n\nHandling new client connection...");
+
         result = handle_connection(client_socket);
-
-        if(result == -1) {
-            printf("\nFailed to handle client socket connection.");
-        }
-
         closesocket(client_socket);
     }
+
+    closesocket(server);
+    WSACleanup();
+
+    return 0;
 }

@@ -55,7 +55,7 @@ SOCKET create_server_socket(int port) {
         return -1;
     }
 
-    printf("\nBound socket to: http://localhost:%d", port);
+    printf("\nBound server socket to: http://localhost:%d", port);
 
     // Listen for a specific amount of connections.
     result = listen(server_socket, MAX_CONNECTIONS);
