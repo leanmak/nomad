@@ -12,6 +12,6 @@ extern const int MAX_CONNECTIONS;
 
 int startup_winsock_api();
 SOCKET create_server_socket(int port);
-int accept_client_socket(SOCKET server_socket);
+SOCKET accept_client_socket(SOCKET server_socket);
 
 #endif

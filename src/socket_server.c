@@ -73,21 +73,18 @@ SOCKET create_server_socket(int port) {
 }
 
 // Accepts and returns a client socket.
-int accept_client_socket(SOCKET server_socket) {
+SOCKET accept_client_socket(SOCKET server_socket) {
     SOCKET client_socket;
 
-    struct sockaddr client_socket_addr;
+    struct sockaddr_in client_socket_addr;
     int len = sizeof(client_socket_addr);
 
-    client_socket = accept(server_socket, &client_socket_addr, &len);
+    client_socket = accept(server_socket, (struct sockaddr*)&client_socket_addr, &len);
     if(client_socket == INVALID_SOCKET) {
         int err = WSAGetLastError();
         printf("\naccept() failed with an error code of: %d", err);
 
-        closesocket(server_socket);
-        WSACleanup();
-
-        return -1;
+        return INVALID_SOCKET;
     }
 
     return client_socket;

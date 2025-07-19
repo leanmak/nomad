@@ -1,58 +1,59 @@
-# nomad
+<div align="center">
+  <h1>
+    <img width="300" alt="Nomad Logo" src="https://github.com/user-attachments/assets/4754b671-1fd1-429a-b3ae-0285e048ed23" />
+  </h1>
 
-An HTTP server built from scratch in C using raw sockets on Windows (Winsock2).
+  <p>Nomad is an HTTP server implemented entirely in C. Without using any external HTTP libraries, it handles TCP connections, parses raw HTTP requests, and serves responses using the Winsock2 API.</p>
+</div>
 
-## How It Works
+## Architecture
 
-1. Sets up a TCP server socket on `localhost:5000`
-2. Waits for a single client connection
-3. Parses the incoming HTTP request manually (no libraries)
-4. Sends an appropriate HTTP response
-5. Closes the connection
+The project is organized into a couple modular components:
 
-## Endpoints
-
-### `GET /`
-
-**Returns:**
-```http
-HTTP/1.1 200 OK
+```
+src/
+├── main.c              # Main server loop (Accepts incoming client sockets)
+├── socket_server.c     # TCP socket creation and management (e.g. creating and binding server socket)
+├── client_handler.c    # HTTP request handling and response generation
+├── request_parser.c    # HTTP request parsing utilities
 ```
 
----
+## Building and Running
 
-### `GET /echo/{message}`
+### Prerequisites
 
-**Returns:** Echoes the ``{message}`` value back in the response body.
-**Example:**
-```bash
-curl http://localhost:5000/echo/hello
-```
+- Windows operating system (multi-os support coming soon!)
+- GCC compiler (MinGW-w64 recommended)
+- Make utility
 
-**Response:**
-```http
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Content-Length: 5
+### Build Instructions
 
-hello
-```
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/leanmak/nomad.git
+   cd nomad
+   ```
 
----
+2. **Build the project**:
+   ```bash
+   make
+   ```
 
-### `GET /user-agent`
+3. **Run the server**:
+   ```bash
+   ./main.exe
+   ```
 
-**Returns:** The value of the ``User-Agent`` header from the request.
-**Example:**
-```bash
-curl --header "User-Agent: foobar/1.2.3" http://localhost:5000/user-agent
-```
+The server will start on `localhost:3000` by default.
 
-**Response:**
-```http
-HTTP/1.1 200 OK
-Content-Type: text/plain
-Content-Length: 13
+## Future Goals
+- [ ] Make the server multi-threaded and non blocking to handle multiple client connections concurrently.
+- [ ] Implement Multi-OS support
+- [ ] Implement dynamic content generation (_this will take a long time..._)
 
-foobar/1.2.3
-```
+## Note
+This is basically a static file web server, it serves only two pages:
+- ``index.html`` - if the incoming request is to the ``/`` path.
+- ``404.html`` - if the incoming request is to any other path.<br>
+
+<p>Once dynamic content generation is implemented, the ability to execute external programs or scripts will become available.</p>
