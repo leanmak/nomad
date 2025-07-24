@@ -47,7 +47,7 @@ src/
 The server will start on `localhost:3000` by default.
 
 ## Future Goals
-- [ ] Make the server multi-threaded and non blocking to handle multiple client connections concurrently (will most likely go from thread-per-connection to fixed threads design).
+- [ ] Make the server multi-threaded and non blocking to handle multiple client connections concurrently (will most likely go from thread-per-connection to event-loop design).
 - [ ] Implement Multi-OS support
 - [ ] Implement dynamic content generation (_this will take a long time..._)
 
