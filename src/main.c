@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include "socket_server.h"
 #include "client_handler.h"
 
 int main() {
     SOCKET server = create_server_socket(3000);
     SOCKET client_socket;
-    int connections_remaining = MAX_CONNECTIONS;
 
-    while(connections_remaining > 0) {
+    while(true) {
         client_socket = accept_client_socket(server);
 
         if(client_socket == INVALID_SOCKET) {
@@ -16,15 +16,21 @@ int main() {
             continue;
         }
 
-        printf("\n\nHandling new client connection...");
-        handle_connection(client_socket);
-        closesocket(client_socket);
+        // Create detached thread per connection
+        pthread_t thread;
+        pthread_attr_t attr;
 
-        connections_remaining--;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+        if(pthread_create(&thread, &attr, handle_connection_test, (void*)&client_socket) != 0) {
+            printf("Failed to create thread for client. Retrying...\n");
+            continue;
+        }
+
+        // cleanup
+        pthread_attr_destroy(&attr);
     }
-
-    closesocket(server);
-    WSACleanup();
 
     return 0;
 }

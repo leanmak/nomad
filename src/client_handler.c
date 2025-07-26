@@ -2,6 +2,7 @@
 #include "client_handler.h"
 #include "request_parser.h"
 #include <string.h>
+#include <Windows.h>
 
 // Reads the specified file's content into a string
 char* read_file_to_string(char *file_name) {
@@ -88,4 +89,26 @@ int handle_connection(SOCKET client_socket) {
     } else {
         return serve_page("HTTP/1.1 404 Not Found", "text/html", "404.html", &client_socket);
     }
+}
+
+void* handle_connection_test(void* client_socket_v_ptr) {
+    printf("\n\nHandling new client connection...");
+
+    SOCKET* client_socket_ptr = (SOCKET*)client_socket_v_ptr;
+    SOCKET client_socket = *client_socket_ptr;
+
+    char* response = "HTTP/1.1 200 OK\r\n\r\n";
+
+    int result = send(client_socket, response, strlen(response), 0);
+    if(result == SOCKET_ERROR) {
+        int error = WSAGetLastError();
+        printf("\nsend() failed with error code: %d", error);
+    }
+
+    // practical convention + flushes send() data that might be in a buffer
+    shutdown(client_socket, SD_SEND);
+
+    closesocket(client_socket);
+
+    return NULL;
 }
