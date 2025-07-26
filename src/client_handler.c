@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "client_handler.h"
 #include "request_parser.h"
+#include "main.h"
 #include <string.h>
 #include <Windows.h>
 
@@ -63,52 +64,52 @@ int serve_page(char *status_line, char *content_type, char *file_name, SOCKET *c
 
     free(file_content);
 
+    // practical convention + flushes send() data that might be in a buffer
+    shutdown(*client_socket, SD_SEND);
+
     return 0;
 }
 
-int handle_connection(SOCKET client_socket) {
-    // read connection content
-    char buffer[1024];
-    
-    int bytes_recieved = recv(client_socket, buffer, sizeof(buffer), 0);
-    if(bytes_recieved == SOCKET_ERROR) {
-        int err = WSAGetLastError();
-        printf("\nrecv() failed with an error code of: %d", err);
+void* handle_connection(void* args) {
+    struct handle_connection_args* sargs = (struct handle_connection_args*)args;
 
-        return -1;
-    }
-    
-    // add null-terminator at end of buffer
-    buffer[bytes_recieved] = '\0';
-    
-    struct http_request request = parse_request(buffer);
-    
-    // For now, serve either home or error page.
-    if(strcmp(request.status.route, "/") == 0) {
-        return serve_page("HTTP/1.1 200 OK", "text/html", "index.html", &client_socket);
-    } else {
-        return serve_page("HTTP/1.1 404 Not Found", "text/html", "404.html", &client_socket);
-    }
-}
+    int id = sargs->id;
+    printf("\n\nHandling new client connection (ID: %d)...", id);
 
-void* handle_connection_test(void* client_socket_v_ptr) {
-    printf("\n\nHandling new client connection...");
-
-    SOCKET* client_socket_ptr = (SOCKET*)client_socket_v_ptr;
+    int error;
+    SOCKET* client_socket_ptr = sargs->client_socket_ptr;
     SOCKET client_socket = *client_socket_ptr;
 
-    char* response = "HTTP/1.1 200 OK\r\n\r\n";
+    // read connection content
+    char buffer[1024];
+    int bytes_received = recv(client_socket, buffer, 1024, 0);
+    if(bytes_received == SOCKET_ERROR) {
+        error = WSAGetLastError();
+        printf("\nrecv() failed with an error code of: %d", error);
 
-    int result = send(client_socket, response, strlen(response), 0);
-    if(result == SOCKET_ERROR) {
-        int error = WSAGetLastError();
-        printf("\nsend() failed with error code: %d", error);
+        return NULL;
     }
 
-    // practical convention + flushes send() data that might be in a buffer
-    shutdown(client_socket, SD_SEND);
+    buffer[bytes_received] = '\0';
+
+    struct http_request request = parse_request(buffer);
+
+    // For now, serve either home or error page.
+    if(strcmp(request.status.route, "/") == 0) {
+        error = serve_page("HTTP/1.1 200 OK", "text/html", "index.html", client_socket_ptr);
+    } else {
+        error = serve_page("HTTP/1.1 404 Not Found", "text/html", "404.html", client_socket_ptr);
+    }
+
+    if(error == -1) {
+        printf("\nFailed to serve page (ID: %d)", id);
+    }
+
+    printf("\n\nClosing client connection (ID: %d)...", id);
 
     closesocket(client_socket);
+    free(client_socket_ptr);
+    free(args);
 
     return NULL;
 }
