@@ -18,6 +18,8 @@ src/
 ├── request_parser.c    # HTTP request parsing utilities
 ```
 
+> There is a multithreaded (thread per connection) version of this HTTP Server available in the [thread-per-connection branch](https://github.com/leanmak/nomad/tree/thread-per-connection).
+
 ## Building and Running
 
 ### Prerequisites
