@@ -49,10 +49,10 @@ src/
 The server will start on `localhost:3000` by default.
 
 ## Future Goals
-- [ ] Make the server multi-threaded and non blocking to handle multiple client connections concurrently.
+- [X] Make the server multi-threaded and non blocking to handle multiple client connections concurrently.
   - [X] Thread per connection ([branch](https://github.com/leanmak/nomad/tree/thread-per-connection))
-  - [ ] Event Loop
-- [ ] Implement Multi-OS support
+  - [X] IOCP Implementation
+- [ ] Implement file caching for static files
 - [ ] Implement dynamic content generation (_this will take a long time..._)
 
 ## Note
