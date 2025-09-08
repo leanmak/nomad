@@ -3,7 +3,6 @@
 #include <winsock2.h>
 #include <mswsock.h>
 
-#include "main.h"
 #include "utils.h"
 #include "server/server.h"
 #include "client/client.h"

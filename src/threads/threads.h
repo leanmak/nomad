@@ -5,7 +5,6 @@
 
 #include <processthreadsapi.h>
 
-#include "../main.h"
 #include "../server/server.h"
 
 /**

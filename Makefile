@@ -16,7 +16,8 @@ SRCS = $(SRC_DIR)/main.c \
        $(SERVER_DIR)/server.c \
        $(THREADS_DIR)/threads.c \
        $(SRC_DIR)/utils.c \
-       $(SRC_DIR)/client/client.c
+       $(SRC_DIR)/client/client.c \
+	   $(SRC_DIR)/client/client_request.c
 
 # Object files in build/
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)

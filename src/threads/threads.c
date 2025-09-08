@@ -37,7 +37,6 @@ DWORD WINAPI WorkerThread(LPVOID param) {
         BOOL ok = GetQueuedCompletionStatus(ctx->iocp_handle, &bytes, &completion_key, &ov, INFINITE);
 
         if (!ov) {
-            // IOCP shutdown signal (if you ever PostQueuedCompletionStatus with NULL ov)
             if (!ok && GetLastError() == WAIT_TIMEOUT) continue;
             break;
         }
@@ -50,10 +49,70 @@ DWORD WINAPI WorkerThread(LPVOID param) {
         ClientContext *client_ctx = CONTAINING_RECORD(ov, ClientContext, ov);
         SOCKET client_socket = client_ctx->socket;
 
-        closesocket(client_socket);
-        free(client_ctx);
+        switch(client_ctx->operation) {
+            case OP_ACCEPT:
+                if(setsockopt(client_socket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&ctx->server_socket, sizeof(ctx->server_socket)) == SOCKET_ERROR) {
+                    printf("Failed to link client socket to server socket.\n");
 
-        AcceptNewClient(ctx);
+                    closesocket(client_socket);
+                    FreeClientContext(client_ctx);
+
+                    break;
+                }
+
+                if(ReceiveDataFromClient(client_socket) != 0) {
+                    printf("Failed to receive data from client socket.\n");
+
+                    closesocket(client_socket);
+                    FreeClientContext(client_ctx);
+
+                    break;
+                }
+
+                // Ready-up thread for another connection
+                AcceptNewClient(ctx);
+
+                FreeClientContext(client_ctx);
+                break;
+            case OP_RECV:
+                // If 0 bytes get sent, the client disconnected.
+                if(bytes == 0) {
+                    closesocket(client_socket);
+                    FreeClientContext(client_ctx);
+
+                    break;
+                }
+
+                char *request_buffer = malloc(client_ctx->buffer_len);
+                if(!request_buffer) {
+                    printf("Failed to allocate memory for receive buffer from client.");
+                }
+                strcpy(request_buffer, client_ctx->buffer);
+
+                if(SendDataToClient(client_socket, request_buffer) != 0) {
+                    printf("Failed to send data to client.\n");
+
+                    closesocket(client_socket);
+                    FreeClientContext(client_ctx);
+
+                    break;
+                }
+
+                FreeClientContext(client_ctx);
+                break;
+            case OP_SEND:
+                if(bytes == 0) {
+                    printf("Failed to send data to client.\n");
+                    closesocket(client_socket);
+                    FreeClientContext(client_ctx);
+
+                    break;
+                }
+
+                FreeClientContext(client_ctx);
+                closesocket(client_socket);
+                break;
+        }
     }
 
     return 0;

@@ -19,7 +19,6 @@ typedef struct client_context_s {
     WSABUF wsa_buffer;
     char *buffer;
     DWORD buffer_len;
-    DWORD bytes;
     OperationType operation;
     SOCKET socket;
 } ClientContext;
@@ -31,5 +30,19 @@ typedef struct client_context_s {
  * @return `NULL` on failure.
  */
 ClientContext *AcceptNewClient(ServerContext *ctx);
+
+/**
+ * @brief Receives data from a new client connection.
+ * 
+ * @returns A non-zero integer on failure.
+ */
+int ReceiveDataFromClient(SOCKET client);
+
+/**
+ * @brief Sends data to a client connection.
+ * 
+ * @returns A non-zero integer on failure.
+ */
+int SendDataToClient(SOCKET client, char *request_buffer);
 
 #endif
