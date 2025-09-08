@@ -24,7 +24,7 @@ src/
 
 ### Prerequisites
 
-- Windows operating system (multi-os support coming soon!)
+- Windows operating system (multi-os support not coming anytime soon!)
 - GCC compiler (MinGW-w64 recommended)
 - Make utility
 
