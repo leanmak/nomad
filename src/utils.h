@@ -56,4 +56,12 @@ typedef struct http_request_s HTTPRequest;
  */
 void FreeHTTPRequest(HTTPRequest *req);
 
+/**
+ * @brief Fetches a file's content.
+ * 
+ * @return The file's content on success.
+ * @return `NULL` on failure.
+ */
+char *GetFileContent(char *file_path);
+
 #endif

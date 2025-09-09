@@ -123,7 +123,7 @@ int ReceiveDataFromClient(SOCKET client) {
     return 0;
 }
 
-int SendDataToClient(SOCKET client, char *request_buffer) {
+int SendDataToClient(SOCKET client, char *request_buffer, ServerContext *ctx) {
     ClientContext *send_ctx = malloc(sizeof(ClientContext));
     if(!send_ctx) {
         printf("Failed to allocate memory for a client's send context.\n");

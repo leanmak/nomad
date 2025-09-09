@@ -6,11 +6,14 @@
 #include <winsock2.h>
 #include <mswsock.h>
 
+#include "../cache/cache.h"
+
 // Holds information about the current state of the program.
 typedef struct server_context_s {
     HANDLE iocp_handle;
     SOCKET server_socket;
     LPFN_ACCEPTEX lpfn_accept_ex;
+    FileCache *cache;
 } ServerContext;
 
 /**

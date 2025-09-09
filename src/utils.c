@@ -58,3 +58,29 @@ void FreeHTTPRequest(HTTPRequest *req) {
 
     free(req);
 }
+
+char *GetFileContent(char *file_path) {
+    FILE *file = fopen(file_path, "rb");
+    if(!file) {
+        printf("Failed to get the file content at %s\n", file_path);
+        return NULL;
+    }
+
+    // Get file size/length by moving the pointer to the end of the file.
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char *content = malloc(size+1);
+    if(!content) {
+        printf("Failed to allocate memory for the file content.\n");
+        return NULL;
+    }
+
+    fread(content, 1, size, file);
+    content[size] = '\0';
+
+    fclose(file);
+
+    return content;
+}

@@ -43,6 +43,6 @@ int ReceiveDataFromClient(SOCKET client);
  * 
  * @returns A non-zero integer on failure.
  */
-int SendDataToClient(SOCKET client, char *request_buffer);
+int SendDataToClient(SOCKET client, char *request_buffer, ServerContext *ctx);
 
 #endif

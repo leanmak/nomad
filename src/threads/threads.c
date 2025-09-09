@@ -89,7 +89,7 @@ DWORD WINAPI WorkerThread(LPVOID param) {
                 }
                 strcpy(request_buffer, client_ctx->buffer);
 
-                if(SendDataToClient(client_socket, request_buffer) != 0) {
+                if(SendDataToClient(client_socket, request_buffer, ctx) != 0) {
                     printf("Failed to send data to client.\n");
 
                     closesocket(client_socket);

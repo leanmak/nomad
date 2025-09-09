@@ -3,6 +3,7 @@
 #include "server.h"
 #include "../client/client.h"
 #include "../utils.h"
+#include "../cache/cache.h"
 
 SOCKET CreateServerSocket() {
     SOCKET server_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -63,6 +64,13 @@ ServerContext *NewServerContext(SOCKET server_socket, HANDLE iocp_handle) {
         return NULL;
     }
 
+    FileCache *cache = NewFileCache();
+    if(!cache) {
+        printf("Failed to create file cache.\n");
+        return NULL;
+    }
+
+    ctx->cache = cache;
     ctx->iocp_handle = iocp_handle;
     ctx->server_socket = server_socket;
 
