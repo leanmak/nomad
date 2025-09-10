@@ -3,3 +3,4 @@ sources.md
 *.exe
 .vscode
 *.o
+build
