@@ -142,26 +142,69 @@ int SendDataToClient(SOCKET client, char *request_buffer, ServerContext *ctx) {
         return -1;
     }
 
-    // test response for now
-    char *response;
+    char *file_name;
     if(strcmp(req->status->route, "/") == 0) {
-        response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 9\r\n\r\nHome Page";
+        file_name = "index.html";
     } else {
-        response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 10\r\n\r\nNot a Page";
+        file_name = "404.html";
     }
-    
-    size_t response_size = strlen(response);
 
+    CachedFile *file = GetCachedFile(file_name, ctx->cache);
+    if(!file) {
+        printf("Failed to get cached file for request.\n");
+        free(send_ctx);
+        free(request_buffer);
+        FreeHTTPRequest(req);
+
+        return -1;
+    }
+
+    char *response_status = malloc(100); // TODO: probably don't use a magic number here
+    if(!response_status) {
+        printf("Failed to allocate memory for get response_status line.\n");
+        free(send_ctx);
+        free(request_buffer);
+        FreeHTTPRequest(req);
+
+        return -1;
+    }
+
+    if(strcmp(req->status->route, "/") == 0) {
+        snprintf(response_status, 100, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: text/html\r\n\r\n", file->length);
+    } else {
+        snprintf(response_status, 100, "HTTP/1.1 404 Not Found\r\nContent-Length: %d\r\nContent-Type: text/html\r\n\r\n", file->length);
+    }
+
+    char *response = malloc(strlen(response_status) + file->length + 1);
+    if(!response) {
+        printf("Failed to allocate memory for response.\n");
+        free(send_ctx);
+        free(request_buffer);
+        free(response_status);
+        FreeHTTPRequest(req);
+
+        return -1;
+    }
+
+    snprintf(response, strlen(response_status) + file->length + 1, "%s%s", response_status, file->content);
+
+    size_t response_size = strlen(response);
     send_ctx->buffer_len = response_size;
     send_ctx->buffer = malloc(response_size+1);
     if(!send_ctx->buffer) {
         printf("Failed to allocate memory for send context buffer.\n");
         free(request_buffer);
         free(send_ctx);
+        free(response_status);
+        free(response);
+        FreeHTTPRequest(req);
 
         return -1;
     }
     strcpy(send_ctx->buffer, response);
+
+    free(response_status);
+    free(response);
 
     send_ctx->wsa_buffer.buf = send_ctx->buffer;
     send_ctx->wsa_buffer.len = send_ctx->buffer_len;
@@ -185,6 +228,7 @@ int SendDataToClient(SOCKET client, char *request_buffer, ServerContext *ctx) {
             free(request_buffer);
             free(send_ctx->buffer);
             free(send_ctx);
+            FreeHTTPRequest(req);
 
             return -1;
         }

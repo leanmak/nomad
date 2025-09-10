@@ -7,6 +7,7 @@
 typedef struct cached_file_s {
     char name[16];
     char *content;
+    int length;
     struct cached_file_s *next;
 } CachedFile;
 
@@ -30,6 +31,6 @@ FileCache *NewFileCache();
  * @return A pointer to the cached file on success.
  * @return `NULL` on failure.
  */
-CachedFile *GetCachedFile(const char *file_name);
+CachedFile *GetCachedFile(const char *file_name, FileCache *cache);
 
 #endif

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <winsock2.h>
+#include <string.h>
 
 #include "cache.h"
 #include "../utils.h"
@@ -36,6 +37,7 @@ FileCache *NewFileCache() {
 
         strncpy(cached_file->name, path, sizeof(cached_file->name)-1);
         cached_file->content = file_content;
+        cached_file->length = strlen(file_content);
 
         if(!cache->head) {
             cache->head = cached_file;
@@ -47,4 +49,18 @@ FileCache *NewFileCache() {
     }
 
     return cache;
+}
+
+CachedFile *GetCachedFile(const char *file_name, FileCache *cache) {
+    CachedFile *curr = cache->head;
+
+    while(curr != NULL) {
+        if(strcmp(curr->name, file_name) == 0) {
+            return curr;
+        }
+        
+        curr = curr->next;
+    }
+
+    return NULL;
 }
