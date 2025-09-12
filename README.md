@@ -1,30 +1,41 @@
 <div align="center">
   <h1>
-    <img width="300" alt="Nomad Logo" src="https://github.com/user-attachments/assets/4754b671-1fd1-429a-b3ae-0285e048ed23" />
+    <img width="300" alt="nomad Logo" src="https://github.com/user-attachments/assets/4754b671-1fd1-429a-b3ae-0285e048ed23" />
   </h1>
 
-  <p>Nomad is an HTTP server implemented entirely in C. Without using any external HTTP libraries, it handles TCP connections, parses raw HTTP requests, and serves responses using the Winsock2 API.</p>
+  <p>nomad is an HTTP server implemented entirely in C. Without using any external HTTP libraries, it handles TCP connections, parses raw HTTP requests, and serves responses using the Winsock2 API and IOCP for non-blocking I/O operations.</p>
 </div>
+
+## Features
+- Multi-threaded, non-blocking IOCP server
+- Static file caching for fast response
+- Minimal HTTP request parsing
+- Serves `index.html` for `/` and `404.html` for all other paths
 
 ## Architecture
 
-The project is organized into a couple modular components:
+The project is organized into modular components:
 
 ```
 src/
-├── main.c              # Main server loop (Accepts incoming client sockets)
-├── socket_server.c     # TCP socket creation and management (e.g. creating and binding server socket)
-├── client_handler.c    # HTTP request handling and response generation
-├── request_parser.c    # HTTP request parsing utilities
+├── main.c                # Entry point, sets up IOCP, threads, and server context
+├── utils.c/h             # Utility functions (WSA init, memory, file reading, etc.)
+├── server/               # Server socket creation, AcceptEx, server context
+│   ├── server.c/h
+├── client/               # Client connection handling, HTTP request parsing
+│   ├── client.c/h
+│   ├── client_request.c/h
+├── threads/              # Worker thread logic for IOCP
+│   ├── threads.c/h
+├── cache/                # Static file caching
+│   ├── cache.c/h
 ```
-
-> There is a multithreaded (thread per connection) version of this HTTP Server available in the [thread-per-connection branch](https://github.com/leanmak/nomad/tree/thread-per-connection).
 
 ## Building and Running
 
 ### Prerequisites
 
-- Windows operating system (multi-os support not coming anytime soon!)
+- Windows operating system
 - GCC compiler (MinGW-w64 recommended)
 - Make utility
 
@@ -43,17 +54,15 @@ src/
 
 3. **Run the server**:
    ```bash
-   ./main.exe
+   ./nomad.exe
    ```
 
-The server will start on `localhost:3000` by default.
+The server will start on `localhost:3000` by default (port can be changed in [the utils header file](https://github.com/leanmak/nomad/blob/main/src/utils.h#L10)).
 
 ## Future Goals
-- [X] Make the server multi-threaded and non blocking to handle multiple client connections concurrently.
-  - [X] Thread per connection ([branch](https://github.com/leanmak/nomad/tree/thread-per-connection))
-  - [X] IOCP Implementation
-- [X] Implement file caching for static files
-- [ ] Implement dynamic content generation (_this will take a long time..._)
+- [X] Multi-threaded, non-blocking server (IOCP)
+- [X] Static file caching
+- [ ] Dynamic content generation (_this will take a long time..._)
 
 ## Note
 This is basically a static file web server, it serves only two pages:
@@ -61,3 +70,7 @@ This is basically a static file web server, it serves only two pages:
 - ``404.html`` - if the incoming request is to any other path.<br>
 
 <p>Once dynamic content generation is implemented, the ability to execute external programs or scripts will become available.</p>
+
+Lastly, there are other concurrency models (old versions) of this HTTP Server stored in other branches:
+- [Single-threaded (blocking)](https://github.com/leanmak/nomad/tree/single-threaded)
+- [Thread-per-connection (multithreaded + blocking)](https://github.com/leanmak/nomad/tree/thread-per-connection)
