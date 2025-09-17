@@ -3,7 +3,7 @@
     <img width="300" alt="nomad Logo" src="https://github.com/user-attachments/assets/4754b671-1fd1-429a-b3ae-0285e048ed23" />
   </h1>
 
-  <p>nomad is an HTTP server implemented entirely in C. Without using any external HTTP libraries, it handles TCP connections, parses raw HTTP requests, and serves responses using the Winsock2 API and IOCP for non-blocking I/O operations.</p>
+  <p>nomad is an HTTP server implemented entirely in C. Without using any external HTTP libraries, it handles TCP connections, parses raw HTTP requests, and serves responses using the <a href="https://learn.microsoft.com/en-us/windows/win32/api/winsock2/">Winsock2 API</a> and <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/i-o-completion-ports">IOCP</a> for non-blocking I/O operations.</p>
 </div>
 
 ## Features
