@@ -36,6 +36,7 @@ FileCache *NewFileCache() {
         ZeroMemory(cached_file, sizeof(CachedFile));
 
         strncpy(cached_file->name, path, sizeof(cached_file->name)-1);
+        cached_file->name[sizeof(cached_file->name)-1] = '\0';
         cached_file->content = file_content;
         cached_file->length = strlen(file_content);
 
