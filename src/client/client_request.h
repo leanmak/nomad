@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CLIENT_REQUEST_H
 #define CLIENT_REQUEST_H
 
