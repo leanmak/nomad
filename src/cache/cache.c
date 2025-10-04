@@ -20,8 +20,11 @@ FileCache *NewFileCache() {
     CachedFile *prev = NULL;
     for(int i = 0; i < 2; i++) {
         char *path = file_paths[i];
+        char file_dir[256] = "pages/";
 
-        char *file_content = GetFileContent(path);
+        strcat(file_dir, path);
+
+        char *file_content = GetFileContent(file_dir);
         if(!file_content) {
             printf("Failed to fetch file content at %s.\n", path);
             return NULL;
