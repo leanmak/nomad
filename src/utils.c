@@ -12,15 +12,6 @@ void InitWSA() {
     }
 }
 
-void *xmalloc(size_t bytes) {
-    void *new_memory = malloc(bytes);
-    if(!new_memory) {
-        exit(EXIT_FAILURE);
-    }
-
-    return new_memory;
-}
-
 char *DuplicateCRLFString(const char *s) {
     char *duplicate = strdup(s);
     if(!duplicate) {

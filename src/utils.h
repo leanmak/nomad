@@ -29,14 +29,6 @@
 void InitWSA();
 
 /**
- * @brief Allocates an abitrary amount of memory.
- * 
- * @return A void pointer to the allocated memory on success.
- * @return Exits on failure.
- */
-void *xmalloc(size_t bytes);
-
-/**
  * @brief Duplicates a CRLF-suffixed string and removes the trailing '\r' character.
  * 
  * @return The duplicated string if successful.

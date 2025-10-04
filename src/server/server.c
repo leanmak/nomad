@@ -45,7 +45,12 @@ SOCKET CreateServerSocket() {
 }
 
 ServerContext *NewServerContext(SOCKET server_socket, HANDLE iocp_handle) {
-    ServerContext *ctx = xmalloc(sizeof(ServerContext));
+    ServerContext *ctx = malloc(sizeof(ServerContext));
+    if(!ctx) {
+        printf("Failed to allocate memory for ServerContext\n");
+        return NULL;
+    }
+    
     ZeroMemory(ctx, sizeof(ServerContext));
 
     // to use the AcceptEx() function
