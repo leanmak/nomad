@@ -16,6 +16,9 @@
 // The maximum amount of headers that can be parsed.
 #define MAX_HEADER_COUNT 512
 
+// The buffer size for the temporary response status string.
+#define CLIENT_RESPONSE_STATUS_BUFFER 128
+
 #include "client/client.h"
 #include "client/client_request.h"
 
