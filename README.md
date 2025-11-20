@@ -45,7 +45,7 @@ src/
    make && ./nomad
    ```
 
-The server will start on `localhost:3000` by default (port can be changed in [the utils header file](https://github.com/leanmak/nomad/blob/main/src/utils.h#L10)).
+The server will start on `localhost:3000` by default (port can be changed in [the utils header file](https://github.com/leanmak/nomad/blob/main/src/utils.h#L7)).
 
 ## Future Goals
 - [X] Multi-threaded, non-blocking server (IOCP)
